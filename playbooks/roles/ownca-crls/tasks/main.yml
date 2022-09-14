@@ -1,0 +1,24 @@
+---
+- name: Create CRL one month valid
+  community.crypto.x509_crl:
+    path: /etc/pki/CA/crls/ownca.crl
+    privatekey_path: /etc/pki/CA/private/ca-certificate.key
+    privatekey_passphrase: "{{ secret_ca_passphrase }}"
+
+    issuer:
+      CN: "ownca"
+
+    last_update: "+0s"
+    next_update: "+4w"
+
+    state: present
+    revoked_certificates:
+      - serial_number: "{{ item }}"
+  register: ca_crl
+  with_items:
+    - "{{ not_define | default([]) }}"
+
+- name: Print CRL task output
+  ansible.builtin.debug:
+    msg: "{{ ca_crl }}"
+
