@@ -16,6 +16,16 @@
       tags:
         - local
 
+    - name: Install Softhsm v2
+      ansible.builtin.yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - softhsm
+        - opensc
+        - gnutls-utils
+        - openssl-pkcs11
+
     - name: Remove old Ansible yum installation
       ansible.builtin.yum:
         name: ansible
@@ -23,4 +33,3 @@
       become: yes
       tags:
         - local
-
