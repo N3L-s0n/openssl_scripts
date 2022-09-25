@@ -1,5 +1,17 @@
 ---
 - hosts: all
+  vars_prompt:
+    - name: token_name
+      prompt: Enter token name
+      private: no
+
+    - name: ca_pin
+      prompt: Enter token pin
+      private: yes
+
+    - name: key_id
+      prompt: Enter key id
+      private: no
 
   roles:
     - role: ownca-certificate

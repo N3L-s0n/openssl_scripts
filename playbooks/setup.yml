@@ -25,6 +25,7 @@
         - opensc
         - gnutls-utils
         - openssl-pkcs11
+      become: yes
 
     - name: Remove old Ansible yum installation
       ansible.builtin.yum:
