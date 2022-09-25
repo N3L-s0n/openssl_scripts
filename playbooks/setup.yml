@@ -10,6 +10,12 @@
     - role: cryptography-install
 
   post_tasks:
+    - name: Install pexpect
+      ansible.builtin.pip:
+        name: pexpect
+        executable: pip3.10
+        extra_args: --user
+
     - name: Refresh table of recently executed programs
       ansible.builtin.shell:
         cmd: hash -r

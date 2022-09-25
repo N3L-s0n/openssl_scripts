@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-# This scripts installs Ansible using yum package management tool
+# This script installs Ansible using yum package management tool
 
 is_installed () {
 
