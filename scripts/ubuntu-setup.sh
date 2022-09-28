@@ -14,3 +14,6 @@ apt install -y ansible
 
 # install git
 apt install -y git
+
+#install softhsm
+sudo apt install -y softhsm2 opensc gnutls-bin libengine-pkcs11-openssl1.1
