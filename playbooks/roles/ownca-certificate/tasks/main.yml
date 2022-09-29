@@ -69,3 +69,5 @@
       (?i)common:         "{{ common_name }}"
       (?i)email:          "{{ email_address }}"
   become: yes
+  tags:
+    - never
