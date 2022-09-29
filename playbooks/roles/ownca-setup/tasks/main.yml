@@ -1,0 +1,46 @@
+---
+# tasks file for ownca-setup
+
+- name: Create PKI file hierarchy
+  block:
+    - name: Create PKI directory
+      ansible.builtin.file:
+        path: "{{ ca_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create PKI directories
+      ansible.builtin.file: 
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      with_items:
+        - "{{ ca_dir }}/certs"
+        - "{{ ca_dir }}/private"
+        - "{{ ca_dir }}/crl"
+        - "{{ ca_dir }}/requests"
+        - "{{ ca_dir }}/newcerts"
+        - "{{ ca_dir }}/serial"
+
+    - name: Create Database and CRL number files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: touch
+        mode: '0644'
+      with_items:
+        - "{{ ca_dir }}/index.txt"
+        - "{{ ca_dir }}/crlnumber"
+
+    - name: Add number to crlnumber file
+      ansible.builtin.lineinfile:
+        line: "1000"
+        path: "{{ ca_dir }}/crlnumber"
+
+  become: yes
+
+- name: Write CA configuration file
+  ansible.builtin.template:
+    src: ca.conf.j2
+    dest: "{{ ca_dir }}/{{ ca_config }}"
+    mode: "0644"
+  become: yes

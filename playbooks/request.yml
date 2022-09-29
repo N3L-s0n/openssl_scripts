@@ -44,5 +44,4 @@
       when: so_pin != so_pin_confirmation
 
   roles:
-    - role: ownca-setup
-    - role: ownca-certificate
+    - role: intermediate-request

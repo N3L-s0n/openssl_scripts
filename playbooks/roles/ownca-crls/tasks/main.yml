@@ -1,24 +1,11 @@
 ---
-- name: Create CRL one month valid
-  community.crypto.x509_crl:
-    path: /etc/pki/CA/crls/ownca.crl
-    privatekey_path: /etc/pki/CA/private/ca-certificate.key
-    privatekey_passphrase: "{{ secret_ca_passphrase }}"
+- name: Create CRL with CA conf file
+  ansible.builtin.expect:
+    command: "openssl ca  -config {{ ca_dir }}/{{ ca_config}} -gencrl -cert {{ ca_dir}}/certs/ca.cert.pem -out {{ ca_dir }}/crl/ca.crl.pem -engine pkcs11 -keyform engine -keyfile {{ key_id }}"
+    responses:
+      (?i)token: "{{ ca_pin }}"
+  become: yes
 
-    issuer:
-      CN: "ownca"
-
-    last_update: "+0s"
-    next_update: "+4w"
-
-    state: present
-    revoked_certificates:
-      - serial_number: "{{ item }}"
-  register: ca_crl
-  with_items:
-    - "{{ not_define | default([]) }}"
-
-- name: Print CRL task output
-  ansible.builtin.debug:
-    msg: "{{ ca_crl }}"
-
+- name: Get text file from CRL pem
+  ansible.builtin.command:
+    cmd: "openssl crl -in {{ ca_dir }}/crl/ca.crl.pem -text -out {{ ca_dir }}/crl/ca.crl.txt"

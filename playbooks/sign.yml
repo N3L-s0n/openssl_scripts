@@ -6,7 +6,7 @@
       block:
         - name: Sign with CA certificate
           community.crypto.x509_certificate_pipe:
-            csr_path: /home/{{ ansible_user }}/Requests/{{ csr_file.split('.')[:-1] | join('.') }}.csr 
+            csr_path: /etc/pki/CA/requests/{{ csr_file }}
             ownca_path: /etc/pki/CA/certs/ca-certificate.crt
             ownca_privatekey_path: /etc/pki/CA/private/ca-certificate.key
             ownca_privatekey_passphrase: "{{ secret_ca_passphrase }}"

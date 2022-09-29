@@ -6,5 +6,3 @@ organization_name:        "UCR ECCI ITI"
 organizational_unit_name: "II 2022"
 common_name:              "ITI ROOT"
 email_address:            ""
-
-ca_dir: "/etc/pki/CA"
