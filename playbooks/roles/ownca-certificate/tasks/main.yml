@@ -58,7 +58,7 @@
 # Try with EXPECT
 - name: Create CA self signed certificate with HSM
   ansible.builtin.expect:
-    command: "openssl req -x509 -config {{ ca_dir}}/{{ ca_config}} -new -out {{ ca_dir }}/certs/ca.cert.pem -engine pkcs11 -keyform engine -key {{ key_id }}"
+    command: "openssl req -x509 -config {{ ca_dir }}/{{ ca_config }} -new -out {{ ca_dir }}/certs/ca.cert.pem -engine pkcs11 -keyform engine -key {{ key_id }}"
     responses:
       (?i)token:          "{{ ca_pin }}"
       (?i)country:        "{{ country_name }}"
