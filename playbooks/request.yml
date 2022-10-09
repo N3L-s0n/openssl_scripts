@@ -1,30 +1,14 @@
 ---
-- hosts: all
+- hosts: ca_intermedia
   vars:
     ca_config: "ca.conf"
   vars_prompt:
     - name: priv_passphrase
-      prompt: "\n# PRIVATE KEY PASSPHRASE\n Enter key passphrase"
+      prompt: "\n# PRIVATE KEY PASSPHRASE INTERMEDIA\n Enter key passphrase"
       private: yes
 
     - name: priv_passphrase_confirmation
       prompt: " Enter same key passphrase for confirmation"
-      private: yes
-
-    - name: ca_pin
-      prompt: "\n# TOKEN PIN\n Enter token pin"
-      private: yes
-
-    - name: ca_pin_confirmation
-      prompt: " Enter same token pin for confirmation"
-      private: yes
-
-    - name: so_pin
-      prompt: "\n# TOKEN PIN\n Enter security officer token pin"
-      private: yes
-
-    - name: so_pin_confirmation
-      prompt: " Enter same security officer pin for confirmation"
       private: yes
 
   pre_tasks:
@@ -33,15 +17,26 @@
         msg: "Key passphrase and confirmation differ"
       when: priv_passphrase != priv_passphrase_confirmation
 
-    - name: Check if pins are equal
-      ansible.builtin.fail:
-        msg: "Token pin and confirmation differ"
-      when: ca_pin != ca_pin_confirmation
+  roles:
+    - role: certificate-request
 
-    - name: Check if so pins are equal
+- hosts: ca_emisora
+  vars:
+    ca_config: "ca.conf"
+  vars_prompt:
+    - name: priv_passphrase
+      prompt: "\n# PRIVATE KEY PASSPHRASE EMISORA\n Enter key passphrase"
+      private: yes
+
+    - name: priv_passphrase_confirmation
+      prompt: " Enter same key passphrase for confirmation"
+      private: yes
+
+  pre_tasks:
+    - name: Check if passphrases are equal
       ansible.builtin.fail:
-        msg: "Security officer pin and confirmation differ"
-      when: so_pin != so_pin_confirmation
+        msg: "Key passphrase and confirmation differ"
+      when: priv_passphrase != priv_passphrase_confirmation
 
   roles:
-    - role: intermediate-request
+    - role: certificate-request

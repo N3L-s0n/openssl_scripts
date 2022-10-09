@@ -1,6 +1,0 @@
----
-- name: Install Ansible with pip3.10
-  ansible.builtin.pip:
-    name: ansible
-    executable: pip3.10
-    extra_args: --user

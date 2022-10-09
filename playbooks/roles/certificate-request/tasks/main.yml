@@ -2,26 +2,34 @@
 - name: Create private key for new certificate
   community.crypto.openssl_privatekey:
     path: "{{ dir_key }}/{{ common_name }}.key"
-    passphrase: "{{ secret_passphrase }}"
+    passphrase: "{{ priv_passphrase }}"
     cipher: auto
-    size: 2048
+    size: 4096
     type: RSA
   become: yes
 
 - name: Create server certificate signing request (CSR)
   community.crypto.openssl_csr_pipe:
     privatekey_path: "{{ dir_key }}/{{ common_name }}.key"
-    privatekey_passphrase: "{{ secret_passphrase }}"
+    privatekey_passphrase: "{{ priv_passphrase }}"
 
     country_name: "{{ country_name }}"
     state_or_province_name: "{{ state_or_province_name }}"
     locality_name: "{{ locality_name }}"
     organization_name: "{{ organization_name }}"
     organizational_unit_name: "{{ organizational_unit_name }}"
+    common_name: "{{ common_name }}"
 
-    subject_alt_name:
-      - "DNS:{{ common_name.split('.')[1:] | join('.') }}"
-      - "DNS:{{ common_name }}"
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: yes
+
+    key_usage:
+      - 'digitalSignature'
+      - 'cRLSign'
+      - 'keyCertSign'
+    key_usage_critical: yes
+
   register: server_csr
   become: yes
 
@@ -36,5 +44,3 @@
     content: "{{ server_csr.csr }}"
     dest: /tmp/{{ common_name }}.csr
   delegate_to: 127.0.0.1
-  tags:
-    - never

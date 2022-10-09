@@ -1,0 +1,10 @@
+---
+country_name:             "CR"
+state_or_province_name:   "San Jose"
+locality_name:            "San Pedro"
+organization_name:        "UCR ECCI ITI"
+organizational_unit_name: "II 2022"
+common_name:              ""
+
+dir_key: "/etc/pki/CA/private"
+dir_csr: "/etc/pki/CA/certs"
