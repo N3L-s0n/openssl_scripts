@@ -13,22 +13,23 @@
     privatekey_path: "{{ dir_key }}/{{ common_name }}.key"
     privatekey_passphrase: "{{ priv_passphrase }}"
 
-    country_name: "{{ country_name }}"
-    state_or_province_name: "{{ state_or_province_name }}"
-    locality_name: "{{ locality_name }}"
-    organization_name: "{{ organization_name }}"
-    organizational_unit_name: "{{ organizational_unit_name }}"
-    common_name: "{{ common_name }}"
+    country_name: "{{ request_info.country_name }}"
+    state_or_province_name: "{{ request_info.state_or_province_name }}"
+    locality_name: "{{ request_info.locality_name }}"
+    organization_name: "{{ request_info.organization_name }}"
+    organizational_unit_name: "{{ request_info.organizational_unit_name }}"
+    common_name: "{{ request_info.common_name }}"
 
-    basic_constraints:
-      - 'CA:TRUE'
-    basic_constraints_critical: yes
+    basic_constraints: "{{ request_info.basic_constraints.data}}"
+    basic_constraints_critical: "{{ request_info.basic_constraints.critical }}"
 
-    key_usage:
-      - 'digitalSignature'
-      - 'cRLSign'
-      - 'keyCertSign'
-    key_usage_critical: yes
+    key_usage: "{{ request_info.key_usage.data }}"
+    key_usage_critical: "{{ request_info.key_usage.critical }}"
+
+    subject_alt_name: "{{ request_info.subject_alt_name.data }}"
+    subject_alt_name_critical: "{{ request_info.subject_alt_name.critical }}"
+
+    crl_distribution_points: "{{ request_info.crl_distribution_points }}"
 
   register: server_csr
   become: yes

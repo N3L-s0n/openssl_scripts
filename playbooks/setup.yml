@@ -18,6 +18,9 @@
       when: priv_passphrase != priv_passphrase_confirmation
 
   roles:
+    - role: ownca-setup
+      tags:
+        - never
     - role: certificate-request
 
 - hosts: issuers
