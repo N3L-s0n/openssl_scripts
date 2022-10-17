@@ -17,7 +17,6 @@
 
   roles:
     - role: certificate-request # registers new CSR
-      when: "'clients' in group_names"
 
   post_tasks:
     - name: Save CSR in client
@@ -46,7 +45,7 @@
             ownca_privatekey_path: /etc/pki/CA/private/{{ ca_name }}.key
             ownca_privatekey_passphrase: "{{ ca_passphrase }}"
 
-            ownca_not_after: "+{{ time }}d"
+            ownca_not_after: "+{{ time | default('365') }}d"
             ownca_not_before: "-1d"
 
             provider: ownca

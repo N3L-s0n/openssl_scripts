@@ -1,12 +1,9 @@
 ---
-- hosts: all
-  vars:
-    ca_dir: "/etc/pki/CA"
-    ca_config: "ca.conf"
+- hosts: issuer
   vars_prompt:
-    - name: ca_pin
-      prompt: "\n# TOKEN PIN\n Enter token pin"
+    - name: ca_passphrase
+      prompt: "\n# CA PRIVATE KEY PASSPHRASE\n Enter key passphrase for signing"
       private: yes
 
   roles:
-    - role: ownca-crls
+    - role: crls

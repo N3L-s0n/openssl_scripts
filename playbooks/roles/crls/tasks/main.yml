@@ -1,0 +1,19 @@
+---
+- name: Read CA certificate
+  community.crypto.x509_certificate_info:
+    path: /etc/pki/CA/certs/{{ ca_name }}.cert.pem
+  register: certificate
+  become: yes
+
+- name: Generate a CRL
+  community.crypto.x509_crl:
+    path: /etc/pki/CA/crl/ca.crl
+    privatekey_path: /etc/pki/CA/private/{{ ca_name }}.key
+    privatekey_passphrase: "{{ ca_passphrase }}"
+    issuer: "{{ certificate.issuer }}"
+    last_update: "+0s"
+    next_update: "+4w"
+    revoked_certificates:
+      - path: "/etc/pki/CA/requests/{{ item }}.cert.pem"
+  with_items: "{{ certificates_to_revoke }}"
+  become: yes

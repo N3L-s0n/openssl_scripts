@@ -1,5 +1,17 @@
 ---
 # tasks file for ownca-setup
+- name: Install dependencies
+  block:
+    - name: Install ansible
+      ansible.builtin.package:
+        name: ansible
+        state: present
+
+    - name: Install Python
+      ansible.builtin.package:
+        name: python3
+        state: present
+  become: yes
 
 - name: Create PKI file hierarchy
   block:
