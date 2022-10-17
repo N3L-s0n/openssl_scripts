@@ -1,4 +1,2 @@
 ---
 # defaults file for ownca-setup
-ca_dir: "/etc/pki/CA"
-ca_config: "ca.conf"

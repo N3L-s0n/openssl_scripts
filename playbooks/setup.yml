@@ -1,10 +1,8 @@
 ---
-- hosts: intermediates
-  vars:
-    ca_config: "ca.conf"
+- hosts: issuers
   vars_prompt:
     - name: priv_passphrase
-      prompt: "\n# PRIVATE KEY PASSPHRASE INTERMEDIA\n Enter key passphrase"
+      prompt: "\n# PRIVATE KEY PASSPHRASE\n Enter key passphrase"
       private: yes
 
     - name: priv_passphrase_confirmation
@@ -22,25 +20,4 @@
       tags:
         - never
     - role: certificate-request
-
-- hosts: issuers
-  vars:
-    ca_config: "ca.conf"
-  vars_prompt:
-    - name: priv_passphrase
-      prompt: "\n# PRIVATE KEY PASSPHRASE EMISORA\n Enter key passphrase"
-      private: yes
-
-    - name: priv_passphrase_confirmation
-      prompt: " Enter same key passphrase for confirmation"
-      private: yes
-
-  pre_tasks:
-    - name: Check if passphrases are equal
-      ansible.builtin.fail:
-        msg: "Key passphrase and confirmation differ"
-      when: priv_passphrase != priv_passphrase_confirmation
-
-  roles:
-    - role: ownca-setup
-    - role: certificate-request
+      when: hostvars[inventory_hostname]['request'] is defined

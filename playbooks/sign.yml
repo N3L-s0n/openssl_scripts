@@ -1,34 +1,66 @@
 ---
-- hosts: all
+- hosts: clients
+  vars_prompt:
+    - name: priv_passphrase
+      prompt: "\n# CSR PRIVATE KEY PASSPHRASE\n Enter key passphrase"
+      private: yes
+
+    - name: priv_passphrase_confirmation
+      prompt: " Enter same key passphrase for confirmation"
+      private: yes
+
+  pre_tasks:
+    - name: Check if passphrases are equal
+      ansible.builtin.fail:
+        msg: "Key passphrase and confirmation differ"
+      when: priv_passphrase != priv_passphrase_confirmation
+
+  roles:
+    - role: certificate-request # registers new CSR
+      when: "'clients' in group_names"
+
+  post_tasks:
+    - name: Save CSR in client
+      ansible.builtin.copy:
+        content: "{{ client_csr.csr }}"
+        dest: /home/{{ ansible_user }}/{{ request.name }}.csr.pem
+      become: yes
+
+- hosts: issuer
+  vars_prompt:
+    - name: ca_passphrase
+      prompt: "\n# CA PRIVATE KEY PASSPHRASE\n Enter key passphrase for signing"
+      private: yes
 
   tasks:
+    - name: Print certificate data
+      ansible.builtin.debug:
+        msg: "{{ hostvars[groups.clients[0]]['client_csr'].csr }}"
+
     - name: Sign certificate signing request (CSR)
       block:
         - name: Sign with CA certificate
           community.crypto.x509_certificate_pipe:
-            csr_path: /etc/pki/CA/requests/{{ csr_file }}
-            ownca_path: /etc/pki/CA/certs/ca-certificate.crt
-            ownca_privatekey_path: /etc/pki/CA/private/ca-certificate.key
-            ownca_privatekey_passphrase: "{{ secret_ca_passphrase }}"
+            csr_content: "{{ hostvars[groups.clients[0]]['client_csr'].csr }}"
+            ownca_path: /etc/pki/CA/certs/{{ ca_name }}.cert.pem
+            ownca_privatekey_path: /etc/pki/CA/private/{{ ca_name }}.key
+            ownca_privatekey_passphrase: "{{ ca_passphrase }}"
 
-            ownca_not_after: "+720d"
+            ownca_not_after: "+{{ time }}d"
             ownca_not_before: "-1d"
 
             provider: ownca
           register: cert
           become: yes
 
-        - name: Save signed certificate
+        - name: Save signed certificate in client
           ansible.builtin.copy:
             content: "{{ cert.certificate }}"
-            dest: /home/{{ ansible_user }}/Requests/{{ csr_file.split('.')[:-1] | join('.') }}.crt
+            dest: /home/{{ ansible_user }}/{{ request.name }}.cert.pem
+          delegate_to: "{{ groups.clients[0] }}"
 
-        - name: Get signed certificate in control node
+        - name: Save signed certificate in CA
           ansible.builtin.copy:
             content: "{{ cert.certificate }}"
-            dest: /tmp/{{ csr_file.split('.')[:-1] | join('.') }}.crt
-          delegate_to: 127.0.0.1
-          tags:
-            - never
-
-      when: csr_file is defined
+            dest: /etc/pki/CA/requests/{{ request.name }}.cert.pem
+          become: yes

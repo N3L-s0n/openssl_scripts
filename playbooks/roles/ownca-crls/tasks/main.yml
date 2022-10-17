@@ -1,11 +1,11 @@
 ---
 - name: Create CRL with CA conf file
   ansible.builtin.expect:
-    command: "openssl ca  -config {{ ca_dir }}/{{ ca_config}} -gencrl -cert {{ ca_dir}}/certs/ca.cert.pem -out {{ ca_dir }}/crl/ca.crl.pem -engine pkcs11 -keyform engine -keyfile {{ key_id }}"
+    command: "openssl ca  -config /etc/pki/CA/{{ ca_config}} -gencrl -cert {{ ca_dir}}/certs/ca.cert.pem -out /etc/pki/CA/crl/ca.crl.pem -engine pkcs11 -keyform engine -keyfile {{ key_id }}"
     responses:
       (?i)token: "{{ ca_pin }}"
   become: yes
 
 - name: Get text file from CRL pem
   ansible.builtin.command:
-    cmd: "openssl crl -in {{ ca_dir }}/crl/ca.crl.pem -text -out {{ ca_dir }}/crl/ca.crl.txt"
+    cmd: "openssl crl -in /etc/pki/CA/crl/ca.crl.pem -text -out /etc/pki/CA/crl/ca.crl.txt"
