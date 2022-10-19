@@ -1,0 +1,40 @@
+---
+# tasks file for ra-setup
+- name: Install dependencies
+  block:
+    - name: Install ansible
+      ansible.builtin.package:
+        name: ansible
+        state: present
+
+    - name: Install Python 3
+      ansible.builtin.package:
+        name: python3
+        state: present
+
+    - name: Install PIP 3
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+
+    - name: Install PyYAML
+      ansible.builtin.pip:
+        name: pyyaml
+
+    - name: Install Ansible Runner
+      ansible.builtin.pip:
+        name: ansible-runner
+
+  become: yes
+
+- name: Clone this repo
+  ansible.builtin.git:
+    repo: "https://github.com/N3L-s0n/own-certificate-authority.git" 
+    dest: "~/registration-authority"
+    clone: yes
+    version: "pki-vpn"
+
+- name: Copy inventory file
+  ansible.builtin.copy:
+    src: "inventory_issuer.yml"
+    dest: "~/registration-authority/playbooks/inventory_issuer.yml"

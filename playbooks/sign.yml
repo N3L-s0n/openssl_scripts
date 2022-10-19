@@ -1,20 +1,5 @@
 ---
 - hosts: clients
-  vars_prompt:
-    - name: priv_passphrase
-      prompt: "\n# CSR PRIVATE KEY PASSPHRASE\n Enter key passphrase"
-      private: yes
-
-    - name: priv_passphrase_confirmation
-      prompt: " Enter same key passphrase for confirmation"
-      private: yes
-
-  pre_tasks:
-    - name: Check if passphrases are equal
-      ansible.builtin.fail:
-        msg: "Key passphrase and confirmation differ"
-      when: priv_passphrase != priv_passphrase_confirmation
-
   roles:
     - role: certificate-request # registers new CSR
 
@@ -26,13 +11,8 @@
       become: yes
 
 - hosts: issuer
-  vars_prompt:
-    - name: ca_passphrase
-      prompt: "\n# CA PRIVATE KEY PASSPHRASE\n Enter key passphrase for signing"
-      private: yes
-
   tasks:
-    - name: Print certificate data
+    - name: Print CSR data
       ansible.builtin.debug:
         msg: "{{ hostvars[groups.clients[0]]['client_csr'].csr }}"
 
@@ -51,6 +31,11 @@
             provider: ownca
           register: cert
           become: yes
+
+        - name: Save certificate result
+          ansible.builtin.set_fact:
+            cert_result: "{{ cert }}"
+            cacheable: yes
 
         - name: Save signed certificate in client
           ansible.builtin.copy:

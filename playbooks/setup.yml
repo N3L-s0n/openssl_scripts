@@ -21,3 +21,11 @@
         - never
     - role: certificate-request
       when: hostvars[inventory_hostname]['request'] is defined
+      tags:
+        - never
+
+- hosts: ras
+  roles:
+    - role: ra-setup
+
+  
