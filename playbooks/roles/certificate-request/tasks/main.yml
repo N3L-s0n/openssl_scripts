@@ -29,8 +29,6 @@
     subject_alt_name: "{{ request.data.subject_alt_name.data }}"
     subject_alt_name_critical: "{{ request.data.subject_alt_name.critical }}"
 
-    crl_distribution_points: "{{ request.data.crl_distribution_points }}"
-
   register: client_csr
   become: yes
 
@@ -39,9 +37,3 @@
     content: "{{ client_csr.csr }}"
     dest: "/etc/pki/CA/certs/{{ request.name }}.csr"
   become: yes
-
-- name: Get CSR file in control node
-  ansible.builtin.copy:
-    content: "{{ client_csr.csr }}"
-    dest: /tmp/{{ request.name }}.csr
-  delegate_to: 127.0.0.1

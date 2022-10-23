@@ -1,50 +1,75 @@
 ---
 - hosts: clients
+
+  pre_tasks:
+    - name: Check if CSR already exists
+      ansible.builtin.stat:
+        path: /home/{{ ansible_user }}/{{ request.name }}.csr.pem
+      register: stat_result
+
   roles:
     - role: certificate-request # registers new CSR
+      when: not stat_result.stat.exists
 
   post_tasks:
     - name: Save CSR in client
       ansible.builtin.copy:
         content: "{{ client_csr.csr }}"
         dest: /home/{{ ansible_user }}/{{ request.name }}.csr.pem
+      when: not stat_result.stat.exists
+      become: yes
+
+    - name: Get key file
+      ansible.builtin.fetch:
+        dest: "/tmp/{{ request.name }}.key"
+        src: "/etc/pki/CA/private/{{ request.name }}.key"
+        flat: yes
       become: yes
 
 - hosts: issuer
   tasks:
+    - name: Check if Certificate already exists
+      ansible.builtin.stat:
+        path: /etc/pki/CA/certs/{{ request.name }}.cert.pem
+      register: stat_result
+
     - name: Print CSR data
       ansible.builtin.debug:
         msg: "{{ hostvars[groups.clients[0]]['client_csr'].csr }}"
+      when: not hostvars[groups.clients[0]]['stat_result'].stat.exists
 
     - name: Sign certificate signing request (CSR)
       block:
+        - name: Save CSR file
+          ansible.builtin.copy:
+            dest: /etc/pki/CA/certs/{{ request.name }}.csr
+            content: "{{ hostvars[groups.clients[0]]['client_csr'].csr }}"
+          when: not hostvars[groups.clients[0]]['stat_result'].stat.exists
+
         - name: Sign with CA certificate
-          community.crypto.x509_certificate_pipe:
-            csr_content: "{{ hostvars[groups.clients[0]]['client_csr'].csr }}"
-            ownca_path: /etc/pki/CA/certs/{{ ca_name }}.cert.pem
-            ownca_privatekey_path: /etc/pki/CA/private/{{ ca_name }}.key
-            ownca_privatekey_passphrase: "{{ ca_passphrase }}"
+          ansible.builtin.expect:
+            command: "sudo openssl ca -config ca.conf -cert certs/{{ ca_name }}.cert.pem -keyfile private/{{ ca_name }}.key -in certs/{{ request.name }}.csr -out certs/{{ request.name }}.cert.pem -extensions extensions"
+            chdir: /etc/pki/CA
+            responses:
+              (?i)pass: "{{ ca_passphrase }}"
+              (?i)sign: "y"
+              (?i)commit: "y"
 
-            ownca_not_after: "+{{ time | default('365') }}d"
-            ownca_not_before: "-1d"
+      become: yes
+      when: not stat_result.stat.exists
 
-            provider: ownca
-          register: cert
-          become: yes
+    - name: Save private key file temporarily
+      ansible.builtin.copy:
+        src: "/tmp/{{ request.name }}.key"
+        dest: "/tmp/"
+      become: yes
 
-        - name: Save certificate result
-          ansible.builtin.set_fact:
-            cert_result: "{{ cert }}"
-            cacheable: yes
-
-        - name: Save signed certificate in client
-          ansible.builtin.copy:
-            content: "{{ cert.certificate }}"
-            dest: /home/{{ ansible_user }}/{{ request.name }}.cert.pem
-          delegate_to: "{{ groups.clients[0] }}"
-
-        - name: Save signed certificate in CA
-          ansible.builtin.copy:
-            content: "{{ cert.certificate }}"
-            dest: /etc/pki/CA/requests/{{ request.name }}.cert.pem
-          become: yes
+    - name: Generate PKCS#12 file
+      community.crypto.openssl_pkcs12:
+        action: export
+        path: /etc/pki/CA/certs/{{ request.name }}.p12
+        friendly_name: "{{ request.name }}"
+        privatekey_path: /tmp/{{ request.name }}.key
+        privatekey_passphrase: "{{ priv_passphrase }}"
+        certificate_path: /etc/pki/CA/certs/{{ request.name }}.cert.pem
+      become: yes

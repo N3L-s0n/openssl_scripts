@@ -1,3 +1,5 @@
 inventory_intermediate.yml
 inventory
 inventory_issuer.yml
+artifacts/
+env/

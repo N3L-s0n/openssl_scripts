@@ -3,7 +3,7 @@ import yaml
 import ansible_runner
 
 class Request:
-  def __init__(self, file_name, country_name, state, locality, org_name, org_unit_name, common_name, sub_alt_name_data, crl_dist_points):
+  def __init__(self, file_name, country_name, state, locality, org_name, org_unit_name, common_name, sub_alt_name_data, crl_dist_points, auth_info_access):
     self.file_name = file_name
     self.country_name = country_name
     self.state = state
@@ -13,6 +13,7 @@ class Request:
     self.commom_name = common_name
     self.sub_alt_name_data = sub_alt_name_data
     self.crl_dist_points = crl_dist_points
+    self.auth_info_access = auth_info_access
 
 def server_program():
     host = socket.gethostname()
@@ -28,7 +29,7 @@ def server_program():
     common_name = conn.recv(1024).decode()
     sub_alt_name_data = conn.recv(1024).decode()
 
-    request = Request(file_name, "CR", "San Jose", "San Pedro", org_name, org_unit_name, common_name, sub_alt_name_data, "DNS:www.prueba.com")
+    request = Request(file_name, "CR", "San Jose", "San Pedro", org_name, org_unit_name, common_name, sub_alt_name_data, "URI:http://172.16.202.22:80", "OCSP;URI:http://172.16.202.22:8080")
 
     csr = {
         'priv_passphrase' : 'prueba',

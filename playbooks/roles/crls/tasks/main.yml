@@ -17,3 +17,12 @@
       - path: "/etc/pki/CA/requests/{{ item }}.cert.pem"
   with_items: "{{ certificates_to_revoke }}"
   become: yes
+  tags:
+    - never
+
+- name: Generate CRL with Openssl
+  ansible.builtin.expect:
+    command: "openssl ca  -config etc/pki/CA/ca.conf -gencrl -cert /etc/pki/CA/certs/ca.cert.pem -out /etc/pki/CA/crl/ca.crl.pem -engine pkcs11 -keyform engine -keyfile {{ key_id }}"
+    responses:
+      (?i)token: "{{ ca_pin }}"
+  become: yes

@@ -25,6 +25,15 @@
       ansible.builtin.pip:
         name: ansible-runner
 
+    - name: Install pexpect
+      ansible.builtin.pip:
+        name: pexpect
+
+    - name: Install sshpass program
+      ansible.builtin.package:
+        name: sshpass
+        state: present
+
   become: yes
 
 - name: Clone this repo
@@ -36,5 +45,33 @@
 
 - name: Copy inventory file
   ansible.builtin.copy:
-    src: "inventory_issuer.yml"
-    dest: "~/registration-authority/playbooks/inventory_issuer.yml"
+    src: "inventory"
+    dest: "~/registration-authority/playbooks/inventory"
+
+- name: Create RA directories
+  block:
+    - name: Create KEYS directory
+      ansible.builtin.file:
+        path: "/etc/pki/RA/"
+        state: directory
+        mode: '0755'
+        recurse: yes
+
+    - name: Create KEYS directory
+      ansible.builtin.file:
+        path: "/etc/pki/RA/private"
+        state: directory
+        mode: '0755'
+
+    - name: Create CSR directory
+      ansible.builtin.file:
+        path: "/etc/pki/RA/csr"
+        state: directory
+        mode: '0755'
+
+    - name: Create PKCS#12 directory
+      ansible.builtin.file:
+        path: "/etc/pki/RA/pkcs12"
+        state: directory
+        mode: '0755'
+  become: yes

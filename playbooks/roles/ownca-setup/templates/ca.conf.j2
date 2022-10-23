@@ -19,6 +19,7 @@ certificate   	= $dir/certs/ca.cert.pem
 crlnumber     	= $dir/crlnumber
 crl           	= $dir/crl/ca.crl.pem
 crl_extensions	= crl_ext
+copy_extensions = copy
 default_crl_days  = 180
 
 default_md    	= sha256
@@ -33,10 +34,17 @@ policy        	= policy_strict
 # The root CA should only sign intermediate certificates that match.
 countryName         	= match
 stateOrProvinceName 	= match
-organizationName    	= match
+organizationName    	= supplied
 organizationalUnitName  = optional
 commonName          	= supplied
 emailAddress        	= optional
+
+[ extensions ]
+crlDistributionPoints=@crl_section
+authorityInfoAccess=OCSP;URI:http://172.16.202.22:8080
+
+[ crl_section ]
+URI.1 = http://172.16.202.22/crls_files/ca.crl
 
 [ req ]
 # Options for the `req` tool (`man req`).
@@ -66,4 +74,7 @@ basicConstraints = critical, CA:true
 keyUsage = critical, digitalSignature, cRLSign, keyCertSign
 
 [ crl_ext ]
-authorityKeyIdentifier=keyid:always
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always
+basicConstraints = critical, CA:false
+keyUsage = critical, digitalSignature

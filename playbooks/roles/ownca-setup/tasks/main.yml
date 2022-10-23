@@ -19,7 +19,6 @@
         - "/etc/pki/CA/crl"
         - "/etc/pki/CA/requests"
         - "/etc/pki/CA/newcerts"
-        - "/etc/pki/CA/serial"
 
     - name: Create Database and CRL number files
       ansible.builtin.file:
